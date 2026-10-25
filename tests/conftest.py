@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import Base
+from app.models import Base, LaunchJob, Template
 
 
 @pytest.fixture
@@ -19,3 +19,17 @@ def engine():
 def session(engine):
     with Session(engine) as session:
         yield session
+
+@pytest.fixture
+def job(session):
+    template = Template(
+        name="t",
+        settings={"name": "x", "budget": 10, "geo": ["US"]},
+    )
+    session.add(template)
+    session.flush()
+
+    job = LaunchJob(template_id=template.id, count=3)
+    session.add(job)
+    session.flush()
+    return job

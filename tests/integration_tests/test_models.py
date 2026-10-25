@@ -6,18 +6,10 @@ from app.models import Template, LaunchItem, ItemStatus
 
 from app.models import LaunchJob
 
-@pytest.fixture
-def job(session):
-    template = Template(name="t", settings={"budget": 10})
-    session.add(template)
-    session.flush()
-    job = LaunchJob(template_id=template.id, count=3)
-    session.add(job)
-    session.flush()
-    return job
+
 
 def test_job_with_items_is_saved(session):
-    template = Template(name="t", settings={"budget": 10})
+    template = Template(name="t", settings={"name": "x", "budget": 10, "geo": ["US"]})
     session.add(template)
     session.flush()
 
