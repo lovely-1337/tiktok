@@ -1,11 +1,8 @@
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
-from app.models import Template, LaunchItem, ItemStatus
-
-from app.models import LaunchJob
-
+from app.models import ItemStatus, LaunchItem, LaunchJob, Template
 
 
 def test_job_with_items_is_saved(session):
@@ -17,9 +14,7 @@ def test_job_with_items_is_saved(session):
     session.add(job)
     session.flush()
 
-    session.add_all(
-        LaunchItem(job_id=job.id, index=i) for i in range(3)
-    )
+    session.add_all(LaunchItem(job_id=job.id, index=i) for i in range(3))
     session.flush()
 
     items = session.scalars(
@@ -29,7 +24,6 @@ def test_job_with_items_is_saved(session):
     assert len(items) == 3
     assert all(item.status == ItemStatus.PENDING for item in items)
     assert all(item.external_campaign_id is None for item in items)
-
 
 
 def test_duplicate_index_is_rejected(session, job):

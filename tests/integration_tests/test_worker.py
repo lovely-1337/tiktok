@@ -1,8 +1,11 @@
-from sqlalchemy import select
 from unittest.mock import Mock
-from app.worker import run_job
-from app.models import LaunchItem, ItemStatus, JobStatus
+
+from sqlalchemy import select
+
 from app.ad_platform import FakePlatform
+from app.models import ItemStatus, JobStatus, LaunchItem
+from app.worker import run_job
+
 
 def test_all_items_created(session, job):
     platform = FakePlatform()
@@ -25,12 +28,16 @@ def test_platform_failure(session, job):
     assert job.status == JobStatus.FAILED
     assert all(i.error_message for i in items)
 
+
 def test_job_with_existing_items(session, job):
     platform = FakePlatform()
     # Create an existing item for the job
     existing_item = LaunchItem(
-    job_id=job.id, index=0,
-    external_campaign_id="existing_campaign", status=ItemStatus.CREATED)
+        job_id=job.id,
+        index=0,
+        external_campaign_id="existing_campaign",
+        status=ItemStatus.CREATED,
+    )
     session.add(existing_item)
     session.commit()
 
@@ -41,8 +48,11 @@ def test_job_with_existing_items(session, job):
     assert existing.external_campaign_id == "existing_campaign"
     assert len(items) == 3  # Total items should still be 3
     assert all(i.status == ItemStatus.CREATED for i in items)
-    assert len({i.external_campaign_id for i in items}) == 3  # Ensure unique external_campaign_ids
+    assert (
+        len({i.external_campaign_id for i in items}) == 3
+    )  # Ensure unique external_campaign_ids
     assert job.status == JobStatus.DONE
+
 
 def test_second_run_does_not_recreate(session, job):
     platform = Mock(wraps=FakePlatform())
@@ -50,6 +60,7 @@ def test_second_run_does_not_recreate(session, job):
     run_job(session, job.id, platform)
 
     assert platform.create_campaign.call_count == 3
+
 
 def test_failed_items_are_retried(session, job):
     platform = FakePlatform(fail_rate=1.0)

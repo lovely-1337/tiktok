@@ -1,12 +1,12 @@
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from fastapi.testclient import TestClient
 
-from app.config import settings
-from app.models import Base, LaunchJob, Template
-from app.main import app, get_session, get_platform
 from app.ad_platform import FakePlatform
+from app.config import settings
+from app.main import app, get_platform, get_session
+from app.models import Base, LaunchJob, Template
 
 
 @pytest.fixture
@@ -23,6 +23,7 @@ def session(engine):
     with Session(engine) as session:
         yield session
 
+
 @pytest.fixture
 def job(session):
     template = Template(
@@ -36,6 +37,7 @@ def job(session):
     session.add(job)
     session.flush()
     return job
+
 
 @pytest.fixture
 def client(engine, monkeypatch):
