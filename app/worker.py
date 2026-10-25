@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models import LaunchItem, ItemStatus, JobStatus, Template, LaunchJob
 from app.schemas import CampaignSettings
-from app.platform import AdPlatform, PlatformError
+from app.ad_platform import AdPlatform, PlatformError
 
 
 def run_job(session: Session, job_id: int, platform: AdPlatform) -> None:
