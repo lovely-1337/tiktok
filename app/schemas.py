@@ -1,35 +1,44 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
 from app.models import ItemStatus, JobStatus
+
 
 class CampaignSettings(BaseModel):
     name: str
-    budget: float = Field(gt=0)   # бюджет строго больше нуля
+    budget: float = Field(gt=0)  # бюджет строго больше нуля
     geo: list[str] = Field(min_length=1)
+
 
 class LaunchOutput(BaseModel):
     job_id: int
     status: str
     items_created: int
     items_failed: int
+
+
 class ItemOutput(BaseModel):
     index: int
     status: str
     external_campaign_id: str | None = None
     error_message: str | None = None
 
+
 class TemplateCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     name: str
     settings: CampaignSettings
+
 
 class TemplateOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str
 
+
 class LaunchCreate(BaseModel):
     template_id: int
     count: int = Field(gt=0)
+
 
 class LaunchCreate(BaseModel):
     template_id: int
@@ -39,10 +48,12 @@ class LaunchCreate(BaseModel):
 class LaunchAccepted(BaseModel):
     id: int
 
+
 class TemplateOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str
+
 
 class ItemOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

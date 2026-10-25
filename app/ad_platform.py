@@ -10,7 +10,6 @@ class PlatformError(Exception):
     """Base class for platform errors."""
 
 
-
 class AdPlatform(ABC):
     @abstractmethod
     def create_campaign(self, settings: CampaignSettings) -> str:

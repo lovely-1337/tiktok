@@ -1,6 +1,8 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import JSON, UniqueConstraint, ForeignKey
 import enum
+
+from sqlalchemy import JSON, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 
 class JobStatus(enum.Enum):
     QUEUED = "queued"
@@ -8,13 +10,16 @@ class JobStatus(enum.Enum):
     DONE = "done"
     FAILED = "failed"
 
+
 class ItemStatus(enum.Enum):
     PENDING = "pending"
     CREATED = "created"
     FAILED = "failed"
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Template(Base):
     __tablename__ = "templates"
@@ -23,6 +28,7 @@ class Template(Base):
     name: Mapped[str]
     settings: Mapped[dict] = mapped_column(JSON)  # Словарь с настройками кампании
 
+
 class LaunchJob(Base):
     __tablename__ = "launch_jobs"
 
@@ -30,6 +36,7 @@ class LaunchJob(Base):
     template_id: Mapped[int] = mapped_column(ForeignKey("templates.id"))
     count: Mapped[int]  # количество кампаний для запуска
     status: Mapped[JobStatus] = mapped_column(default=JobStatus.QUEUED)
+
 
 class LaunchItem(Base):
     __tablename__ = "launch_items"
