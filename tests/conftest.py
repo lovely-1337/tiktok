@@ -53,7 +53,7 @@ def client(engine, monkeypatch):
                 raise
 
     app.dependency_overrides[get_session] = override_get_session
-    app.dependency_overrides[get_platform] = lambda: FakePlatform(fail_rate=1.0)
+    app.dependency_overrides[get_platform] = lambda: FakePlatform()
     monkeypatch.setattr("app.main.SessionLocal", TestSession)
 
     yield TestClient(app)
