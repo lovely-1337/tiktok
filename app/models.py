@@ -3,7 +3,6 @@ import enum
 from sqlalchemy import JSON, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-
 class JobStatus(enum.Enum):
     QUEUED = "queued"
     RUNNING = "running"
@@ -47,3 +46,4 @@ class LaunchItem(Base):
     status: Mapped[ItemStatus] = mapped_column(default=ItemStatus.PENDING)
     external_campaign_id: Mapped[str | None]  # ID кампании на платформе
     error_message: Mapped[str | None]  # сообщение об ошибке, если статус "failed"
+    attempts: Mapped[int] = mapped_column(default=0)  # количество попыток запуска

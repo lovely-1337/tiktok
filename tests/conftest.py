@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.ad_platform import FakePlatform
+from app.ad_platform import FakePlatform, AdPlatform, PlatformError
 from app.config import settings
 from app.main import app, get_platform, get_session
 from app.models import Base, LaunchJob, Template
@@ -59,3 +59,16 @@ def client(engine, monkeypatch):
     yield TestClient(app)
 
     app.dependency_overrides.clear()
+
+class FlakyPlatform(AdPlatform):
+    """Fails the first `failures` calls, then succeeds."""
+
+    def __init__(self, failures: int):
+        self.failures = failures
+        self.calls = 0
+
+    def create_campaign(self, settings) -> str:
+        self.calls += 1
+        if self.calls <= self.failures:
+            raise PlatformError("temporary failure")
+        return f"campaign-{self.calls}"
