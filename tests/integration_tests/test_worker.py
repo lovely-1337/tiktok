@@ -2,7 +2,7 @@ from sqlalchemy import select
 from unittest.mock import Mock
 from app.worker import run_job
 from app.models import LaunchItem, ItemStatus, JobStatus
-from app.platform import FakePlatform
+from app.ad_platform import FakePlatform
 
 def test_all_items_created(session, job):
     platform = FakePlatform()
@@ -50,7 +50,7 @@ def test_second_run_does_not_recreate(session, job):
     run_job(session, job.id, platform)
 
     assert platform.create_campaign.call_count == 3
-    
+
 def test_failed_items_are_retried(session, job):
     platform = FakePlatform(fail_rate=1.0)
     run_job(session, job.id, platform)

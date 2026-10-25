@@ -1,9 +1,12 @@
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
+from fastapi.testclient import TestClient
 
 from app.config import settings
 from app.models import Base, LaunchJob, Template
+from app.main import app, get_session, get_platform
+from app.ad_platform import FakePlatform
 
 
 @pytest.fixture
@@ -33,3 +36,24 @@ def job(session):
     session.add(job)
     session.flush()
     return job
+
+@pytest.fixture
+def client(engine, monkeypatch):
+    TestSession = sessionmaker(bind=engine, expire_on_commit=False)
+
+    def override_get_session():
+        with TestSession() as session:
+            try:
+                yield session
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+
+    app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_platform] = lambda: FakePlatform(fail_rate=1.0)
+    monkeypatch.setattr("app.main.SessionLocal", TestSession)
+
+    yield TestClient(app)
+
+    app.dependency_overrides.clear()

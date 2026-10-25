@@ -1,6 +1,6 @@
 import pytest
 from app.schemas import CampaignSettings
-from app.platform import FakePlatform, PlatformError
+from app.ad_platform import FakePlatform, PlatformError
 
 @pytest.fixture
 def settings() -> CampaignSettings:
