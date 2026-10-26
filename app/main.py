@@ -31,7 +31,6 @@ def run_in_background(job_id: int, platform: AdPlatform) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(engine)
     yield
 
 
