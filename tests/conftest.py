@@ -11,7 +11,8 @@ from app.models import Base, LaunchJob, Template
 
 @pytest.fixture
 def engine():
-    engine = create_engine(settings.database_url, connect_args={"connect_timeout": 3})
+    engine = create_engine(settings.test_database_url, connect_args={"connect_timeout": 3})
+    assert settings.test_database_url != settings.database_url, "tests must not use the main database"
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     yield engine
