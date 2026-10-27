@@ -1,11 +1,14 @@
+from sqlalchemy import select
+
 from app.ad_platform import FakePlatform
 from app.main import app, get_platform
+from app.models import User
 
 VALID_TEMPLATE = {
     "name": "promo",
     "settings": {"name": "x", "budget": 10, "geo": ["US"]},
 }
-
+USER = {"email": "a@gmail.com", "password": "secret123"}
 
 def test_create_template(client):
     response = client.post("/templates", json=VALID_TEMPLATE)
@@ -74,3 +77,53 @@ def test_create_launch_with_invalid_count(client):
     template_id = client.post("/templates", json=VALID_TEMPLATE).json()["id"]
     response = client.post("/launches", json={"template_id": template_id, "count": -1})
     assert response.status_code == 422
+
+
+def test_register_success(client):
+    response = client.post("/register", json=USER)
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["email"] == "a@gmail.com"
+    assert "id" in body
+    assert "password_hash" not in body
+    assert "password" not in body
+
+
+def test_register_duplicate_email(client):
+    client.post("/register", json=USER)
+    response = client.post("/register", json=USER)
+
+    assert response.status_code == 409
+
+
+def test_register_duplicate_email_other_case(client):
+    client.post("/register", json=USER)
+    response = client.post(
+        "/register", json={"email": "A@Gmail.com", "password": "secret123"}
+    )
+
+    assert response.status_code == 409
+
+
+def test_register_short_password(client):
+    response = client.post(
+        "/register", json={"email": "a@gmail.com", "password": "short"}
+    )
+
+    assert response.status_code == 422
+
+
+def test_register_invalid_email(client):
+    response = client.post(
+        "/register", json={"email": "not-an-email", "password": "secret123"}
+    )
+
+    assert response.status_code == 422
+
+def test_password_is_stored_hashed(client, session):
+    client.post("/register", json=USER)
+
+    user = session.scalars(select(User)).one()
+    assert user.password_hash != "secret123"
+    assert user.password_hash.startswith("$argon2")

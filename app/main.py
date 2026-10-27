@@ -4,19 +4,22 @@ from typing import Annotated
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.ad_platform import AdPlatform, FakePlatform
 from app.db import SessionLocal, engine, get_session
-from app.models import Base, LaunchItem, LaunchJob, Template
+from app.models import Base, LaunchItem, LaunchJob, Template, User
 from app.schemas import (
     LaunchAccepted,
     LaunchCreate,
     LaunchOut,
     TemplateCreate,
     TemplateOut,
+    UserCreate,
+    UserOut
 )
 from app.worker import run_job
-
+from app.security import hash_password
 
 def get_platform() -> AdPlatform:
     # Отдельная функция для Depends: в тестах подменяется через dependency_overrides.
@@ -38,6 +41,19 @@ app = FastAPI(title="Campaign Launcher", lifespan=lifespan)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+
+
+
+@app.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def register(body: UserCreate, session: SessionDep) -> User:
+    user = User(email=body.email, password_hash=hash_password(body.password))
+    session.add(user)
+    try:
+        session.flush()  # здесь срабатывает unique по email
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="Email already registered")
+    return user
 
 
 @app.post(

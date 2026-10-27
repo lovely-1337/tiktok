@@ -1,7 +1,8 @@
 import enum
 
-from sqlalchemy import JSON, ForeignKey, UniqueConstraint
+from sqlalchemy import JSON, ForeignKey, UniqueConstraint, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 
 class JobStatus(enum.Enum):
     QUEUED = "queued"
@@ -26,6 +27,7 @@ class Template(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     settings: Mapped[dict] = mapped_column(JSON)  # Словарь с настройками кампании
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
 
 class LaunchJob(Base):
@@ -47,3 +49,9 @@ class LaunchItem(Base):
     external_campaign_id: Mapped[str | None]  # ID кампании на платформе
     error_message: Mapped[str | None]  # сообщение об ошибке, если статус "failed"
     attempts: Mapped[int] = mapped_column(default=0)  # количество попыток запуска
+
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password_hash: Mapped[str]

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, field_validator
 
 from app.models import ItemStatus, JobStatus
 
@@ -68,3 +68,16 @@ class LaunchOut(BaseModel):
     status: JobStatus
     count: int
     items: list[ItemOut]
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+    @field_validator("email")
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        # Иначе A@x.com и a@x.com станут двумя пользователями.
+        return v.lower()
+
+class UserOut(BaseModel):
+    id: int
+    email: str
