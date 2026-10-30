@@ -1,6 +1,7 @@
 import enum
+from datetime import datetime
 
-from sqlalchemy import JSON, ForeignKey, UniqueConstraint, String
+from sqlalchemy import JSON, ForeignKey, UniqueConstraint, String, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -55,3 +56,10 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str]
+
+class TikTokOAuthState(Base):
+    __tablename__ = "tiktok_state"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    state: Mapped[str] = mapped_column(unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
