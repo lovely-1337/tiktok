@@ -135,6 +135,17 @@ def create_template(body: TemplateCreate, session: SessionDep, current_user: Use
     session.flush()
     return template
 
+@app.get("/templates", response_model=list[TemplateOut])
+def list_templates(
+    session: SessionDep,
+    current_user: User = Depends(get_current_user),
+) -> list[Template]:
+    return session.scalars(
+        select(Template)
+        .where(Template.user_id == current_user.id)
+        .order_by(Template.id.desc())
+    ).all()
+
 @app.get("/auth/tiktok/start")
 def start(session: SessionDep, current_user: User = Depends(get_current_user)):
     state_value = secrets.token_urlsafe(32)
